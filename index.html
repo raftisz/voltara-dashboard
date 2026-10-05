@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voltara Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data/data.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --border: rgba(11,11,11,0.10);
+    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --good: #006300;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --border: rgba(255,255,255,0.10);
+      --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --good: #0ca30c;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --border: rgba(255,255,255,0.10);
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --good: #0ca30c;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", sans-serif;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; align-items: end; margin-bottom: 16px; }
+  h1 { font-size: 26px; margin: 0; }
+  h2 { font-size: 21px; margin: 0 0 4px; }
+  h3 { font-size: 16px; margin: 0 0 4px; }
+  .sub, .note { color: var(--ink-2); margin: 0; }
+  .note { font-size: 13px; }
+  .author { color: var(--muted); font-size: 13px; text-align: right; }
+  nav { position: sticky; top: 0; z-index: 5; background: var(--page); display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+  nav a { flex: none; color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; }
+  nav a:hover { color: var(--ink); border-color: var(--axis); }
+  .chapter { padding-top: 28px; scroll-margin-top: 48px; }
+  .chapter > .lead { color: var(--ink-2); margin: 0 0 14px; max-width: 72ch; }
+  .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+  .kpi .label { color: var(--ink-2); font-size: 13px; }
+  .kpi .value { font-size: 26px; font-weight: 650; margin: 2px 0; }
+  .kpi .delta { font-size: 13px; color: var(--ink-2); }
+  .kpi .delta b { color: var(--good); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 12px; margin-bottom: 12px; }
+  .chart { position: relative; height: 280px; margin-top: 12px; }
+  .story { border-left: 3px solid var(--s1); padding-left: 12px; margin: 12px 0 0; color: var(--ink-2); font-size: 14px; }
+  .story b { color: var(--ink); }
+  ol.next { margin: 0; padding-left: 20px; }
+  ol.next li { margin-bottom: 10px; }
+  ol.next li b { color: var(--ink); }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--ink-2); font-weight: 600; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Voltara Dashboard</h1>
+      <p class="sub">บริษัทพลังงานแสงอาทิตย์ · ม.ค. 2024 – ธ.ค. 2025 (ข้อมูลจำลอง)</p>
+    </div>
+    <div class="author">ผู้จัดทำ<br>ชลธี กิมสร้อย 67160325</div>
+  </header>
+
+  <nav aria-label="บท">
+    <a href="#ch1">1 · ปัญหา</a><a href="#ch2">2 · ลูกค้า</a><a href="#ch3">3 · ผลงาน</a><a href="#ch4">4 · ESG</a><a href="#ch5">5 · ก้าวต่อไป</a>
+  </nav>
+
+  <!-- บทที่ 1 -->
+  <section class="chapter" id="ch1">
+    <div class="eyebrow">บทที่ 1</div>
+    <h2>ปัญหา: ค่าไฟครัวเรือนสูงและผันผวน</h2>
+    <p class="lead" id="ch1Lead"></p>
+    <div class="kpis" id="ch1Kpis"></div>
+    <section class="card">
+      <h3>บิลค่าไฟรายเดือนของบ้านที่ใช้ไฟ 400 หน่วย</h3>
+      <p class="note">บาท/เดือน รวม VAT · เทียบกับบิลหลังติดโซลาร์ 5 kW · ค่าไฟเป็นค่าประมาณอิงประกาศ กกพ.</p>
+      <div class="chart"><canvas id="billChart" role="img" aria-label="กราฟแท่งบิลค่าไฟก่อนและหลังติดโซลาร์ รายงวด 2022 ถึง 2025"></canvas></div>
+      <details><summary>ดูตาราง</summary><div class="tablewrap" id="billTable"></div></details>
+    </section>
+  </section>
+
+  <!-- บทที่ 2 -->
+  <section class="chapter" id="ch2">
+    <div class="eyebrow">บทที่ 2</div>
+    <h2>ลูกค้า: 5 กลุ่มที่ติดตั้งโซลาร์กับเรา</h2>
+    <p class="lead" id="ch2Lead"></p>
+    <section class="card">
+      <h3>รายได้ติดตั้งแยกตามกลุ่มลูกค้า</h3>
+      <p class="note">ล้านบาท · 2024 เทียบ 2025</p>
+      <div class="chart" style="height:300px"><canvas id="custChart" role="img" aria-label="กราฟแท่งแนวนอนรายได้ติดตั้งของลูกค้า 5 กลุ่ม ปี 2024 และ 2025"></canvas></div>
+      <div class="tablewrap" id="custTable"></div>
+    </section>
+  </section>
+
+  <!-- บทที่ 3 -->
+  <section class="chapter" id="ch3">
+    <div class="eyebrow">บทที่ 3</div>
+    <h2>ผลงาน: รายได้และต้นทุน</h2>
+    <p class="lead">ธุรกิจบริการติดตั้งโตเร็วกว่าการขายไฟ ส่วนต้นทุนจัดหมวดตาม 4M และผูกกับคู่ค้าหลัก</p>
+    <div class="kpis" id="ch3Kpis"></div>
+    <div class="grid2">
+      <section class="card">
+        <h3>รายได้รายเดือนตามกลุ่มธุรกิจ</h3>
+        <p class="note">ล้านบาท</p>
+        <div class="chart"><canvas id="revChart" role="img" aria-label="กราฟเส้นรายได้รายเดือนแยกตามกลุ่มธุรกิจ"></canvas></div>
+        <p class="story" id="revStory"></p>
+        <details><summary>ดูตาราง</summary><div class="tablewrap" id="revTable"></div></details>
+      </section>
+      <section class="card">
+        <h3>ต้นทุนตามหมวด 4M</h3>
+        <p class="note">ล้านบาท รวม 24 เดือน · ค่าเชื้อเพลิงก๊าซผูกกับคู่ค้าหลักคือผู้จัดหาก๊าซ</p>
+        <div class="chart"><canvas id="costChart" role="img" aria-label="กราฟแท่งแนวนอนต้นทุนรวมแยกตามหมวด"></canvas></div>
+        <details><summary>ดูตาราง</summary><div class="tablewrap" id="costTable"></div></details>
+      </section>
+    </div>
+  </section>
+
+  <!-- บทที่ 4 -->
+  <section class="chapter" id="ch4">
+    <div class="eyebrow">บทที่ 4</div>
+    <h2>ESG: CO₂ ที่ลดได้</h2>
+    <p class="lead">นับเฉพาะไฟจากโซลาร์ฟาร์มและระบบที่ติดตั้งให้ลูกค้า ไม่นับไฟจากโรงไฟฟ้าก๊าซ</p>
+    <div class="kpis" id="ch4Kpis"></div>
+    <section class="card">
+      <h3>CO₂ ที่ลดได้รายเดือน</h3>
+      <p class="note" id="co2Note"></p>
+      <div class="chart"><canvas id="co2Chart" role="img" aria-label="กราฟแท่งซ้อน CO2 ที่ลดได้แยกตามแหล่งโซลาร์"></canvas></div>
+      <details><summary>ดูตาราง</summary><div class="tablewrap" id="co2Table"></div></details>
+    </section>
+  </section>
+
+  <!-- บทที่ 5 -->
+  <section class="chapter" id="ch5">
+    <div class="eyebrow">บทที่ 5</div>
+    <h2>ก้าวต่อไป</h2>
+    <p class="lead">ข้อเสนอจากตัวเลขในบทที่ 1–4</p>
+    <section class="card"><ol class="next" id="nextSteps"></ol></section>
+  </section>
+
+  <footer>ข้อมูลจาก <code>generate_data.py</code> · คำอธิบายคอลัมน์อยู่ใน <code>data_dictionary.md</code></footer>
+</main>
+
+<script>
+const D = window.VOLTARA;
+const fmt = (n, d = 1) => n.toLocaleString("th-TH", { minimumFractionDigits: d, maximumFractionDigits: d });
+const sum = (rows, key, pred = () => true) => rows.filter(pred).reduce((a, r) => a + r[key], 0);
+const pct = (a, b) => (a / b - 1) * 100;
+const signed = x => (x >= 0 ? "+" : "") + fmt(x) + "%";
+const monthLabel = m => { const [y, mo] = m.split("-"); return ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."][+mo - 1] + " " + y.slice(2); };
+const kpiHtml = list => list.map(([l, v, d]) =>
+  `<div class="card kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="delta">${d}</div></div>`).join("");
+const table = (head, rows) => `<table><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
+
+const SEG = { installation: "ติดตั้งโซลาร์", ppa: "ขายไฟ PPA", om_service: "บริการ O&M" };
+const SRC = { solar_farm: "โซลาร์ฟาร์ม", customer_solar: "ระบบที่ติดตั้งให้ลูกค้า" };
+const CAT = { gas_fuel: "ค่าเชื้อเพลิงก๊าซ", solar_equipment: "แผง/อินเวอร์เตอร์", labor: "ค่าแรง", maintenance: "ซ่อมบำรุง", admin_process: "บริหาร/กระบวนการ" };
+
+// ---------- บทที่ 1 ปัญหา ----------
+const bills = D.household_bill;
+const billLow = bills[0], billPeak = bills.reduce((a, b) => b.bill_400kwh_thb > a.bill_400kwh_thb ? b : a), billNow = bills[bills.length - 1];
+const saveNow = billNow.bill_400kwh_thb - billNow.bill_with_5kw_solar_thb;
+document.getElementById("ch1Lead").innerHTML =
+  `ค่าไฟบ้านอยู่อาศัยขึ้นจาก ${fmt(billLow.tariff_thb_per_kwh, 2)} เป็น ${fmt(billPeak.tariff_thb_per_kwh, 2)} บาท/หน่วย ` +
+  `ในช่วง ${billLow.period} ถึง ${billPeak.period} ครัวเรือนคุมรายจ่ายค่าไฟเองไม่ได้ โซลาร์บนหลังคาช่วยลดส่วนที่ใช้ตอนกลางวันได้`;
+document.getElementById("ch1Kpis").innerHTML = kpiHtml([
+  ["บิลสูงสุด (บ้าน 400 หน่วย)", fmt(billPeak.bill_400kwh_thb, 0) + " บาท", `${billPeak.period} · ${signed(pct(billPeak.bill_400kwh_thb, billLow.bill_400kwh_thb))} จาก ${billLow.period}`],
+  ["บิลงวดล่าสุด", fmt(billNow.bill_400kwh_thb, 0) + " บาท", billNow.period],
+  ["ประหยัดได้เมื่อติดโซลาร์ 5 kW", fmt(saveNow, 0) + " บาท/เดือน", `<b>${fmt(saveNow / billNow.bill_400kwh_thb * 100, 0)}%</b> ของบิล · ${fmt(saveNow * 12, 0)} บาท/ปี`],
+]);
+document.getElementById("billTable").innerHTML = table(["งวด", "บาท/หน่วย", "บิล 400 หน่วย", "บิลหลังติดโซลาร์"],
+  bills.map(b => [b.period, fmt(b.tariff_thb_per_kwh, 2), fmt(b.bill_400kwh_thb, 0), fmt(b.bill_with_5kw_solar_thb, 0)]));
+
+// ---------- บทที่ 2 ลูกค้า ----------
+const cust = (y, s) => D.customers.find(c => c.year === y && c.segment === s);
+const segs = [...new Set(D.customers.map(c => c.segment))];
+const instInc = sum(D.customers, "revenue_mthb", c => c.year === "2025") - sum(D.customers, "revenue_mthb", c => c.year === "2024");
+const segInfo = segs.map(s => {
+  const a = cust("2024", s), b = cust("2025", s);
+  return { s, name: a.segment_th, a, b, growth: pct(b.revenue_mthb, a.revenue_mthb), share: (b.revenue_mthb - a.revenue_mthb) / instInc * 100 };
+});
+const topSeg = segInfo.reduce((a, b) => b.share > a.share ? b : a);
+const projects = y => sum(D.customers, "projects", c => c.year === y);
+document.getElementById("ch2Lead").innerHTML =
+  `ปี 2025 ติดตั้ง ${fmt(projects("2025"), 0)} โครงการ (ปี 2024 ${fmt(projects("2024"), 0)} โครงการ) ` +
+  `บ้านพักอาศัยมีจำนวนโครงการมากที่สุด แต่${topSeg.name}สร้างรายได้มากที่สุด เพราะระบบใหญ่กว่ามาก`;
+document.getElementById("custTable").innerHTML = table(
+  ["กลุ่ม", "โครงการ 24 → 25", "kW 24 → 25", "ขนาดเฉลี่ย", "รายได้ 24 → 25 (ล้านบาท)", "โต"],
+  segInfo.map(x => [x.name, `${fmt(x.a.projects, 0)} → ${fmt(x.b.projects, 0)}`, `${fmt(x.a.kw_installed, 0)} → ${fmt(x.b.kw_installed, 0)}`,
+    `${x.a.avg_system_kw} kW`, `${fmt(x.a.revenue_mthb)} → ${fmt(x.b.revenue_mthb)}`, signed(x.growth)]));
+
+// ---------- บทที่ 3 ผลงาน ----------
+const rev = (y, seg) => sum(D.revenue, "revenue_mthb", r => r.month.startsWith(y) && (!seg || r.segment === seg));
+const inst24 = rev("2024", "installation"), inst25 = rev("2025", "installation");
+const ppa24 = rev("2024", "ppa"), ppa25 = rev("2025", "ppa");
+const gas = sum(D.costs, "cost_mthb", r => r.category === "gas_fuel");
+const costTotal = sum(D.costs, "cost_mthb");
+document.getElementById("ch3Kpis").innerHTML = kpiHtml([
+  ["รายได้รวมปี 2025", fmt(rev("2025")) + " ล้านบาท", `<b>▲ ${signed(pct(rev("2025"), rev("2024")))}</b> จากปี 2024`],
+  ["รายได้ติดตั้งโต (2024→2025)", signed(pct(inst25, inst24)), `PPA โต ${signed(pct(ppa25, ppa24))}`],
+  ["ค่าเชื้อเพลิงก๊าซ 24 เดือน", fmt(gas) + " ล้านบาท", `${fmt(gas / costTotal * 100)}% ของต้นทุนทั้งหมด`],
+]);
+const ranked = [...segInfo].sort((a, b) => b.share - a.share);
+document.getElementById("revStory").innerHTML =
+  `<b>ทำไมรายได้ติดตั้งโต ${signed(pct(inst25, inst24))}:</b> รายได้ติดตั้งเพิ่มขึ้น ${fmt(inst25 - inst24)} ล้านบาท ` +
+  `โดย<b>${topSeg.name}</b>เป็นแรงขับหลัก รายได้กลุ่มนี้เพิ่มจาก ${fmt(topSeg.a.revenue_mthb)} เป็น ${fmt(topSeg.b.revenue_mthb)} ล้านบาท ` +
+  `(${signed(topSeg.growth)}) คิดเป็น ${fmt(topSeg.share, 0)}% ของส่วนที่เพิ่มขึ้น จำนวนโครงการเพิ่มจาก ${topSeg.a.projects} เป็น ${topSeg.b.projects} ` +
+  `และแต่ละโครงการเฉลี่ย ${topSeg.a.avg_system_kw} kW จึงมีมูลค่าราว ${fmt(topSeg.a.avg_system_kw * topSeg.a.price_thb_per_w / 1000)} ล้านบาท ` +
+  `รองลงมาคือ${ranked[1].name} (${fmt(ranked[1].share, 0)}%) ส่วน PPA โตแค่ ${signed(pct(ppa25, ppa24))} เพราะถูกจำกัดด้วยกำลังผลิตของโรงไฟฟ้า`;
+
+const pivot = (rows, col, val, labels) => table(["เดือน", ...Object.values(labels)],
+  D.months.map(m => [monthLabel(m), ...Object.keys(labels).map(c => fmt(rows.find(r => r.month === m && r[col] === c)[val]))]));
+document.getElementById("revTable").innerHTML = pivot(D.revenue, "segment", "revenue_mthb", SEG);
+
+const costRows = Object.keys(CAT).map(c => {
+  const r0 = D.costs.find(r => r.category === c);
+  return { cat: c, m4: r0.m4, partner: r0.key_partner,
+    y24: sum(D.costs, "cost_mthb", r => r.category === c && r.month.startsWith("2024")),
+    y25: sum(D.costs, "cost_mthb", r => r.category === c && r.month.startsWith("2025")) };
+}).sort((a, b) => (b.y24 + b.y25) - (a.y24 + a.y25));
+document.getElementById("costTable").innerHTML = table(["หมวด", "4M", "คู่ค้าหลัก", "2024", "2025", "รวม"],
+  costRows.map(r => [CAT[r.cat], r.m4, r.partner, fmt(r.y24), fmt(r.y25), fmt(r.y24 + r.y25)]));
+
+// ---------- บทที่ 4 ESG ----------
+const co2 = (pred) => sum(D.co2, "tco2_avoided", pred);
+const co2Total = co2(), co224 = co2(r => r.month.startsWith("2024")), co225 = co2(r => r.month.startsWith("2025"));
+document.getElementById("ch4Kpis").innerHTML = kpiHtml([
+  ["CO₂ ที่ลดได้ 24 เดือน", fmt(co2Total, 0) + " tCO₂", `<b>▲ ${signed(pct(co225, co224))}</b> ปี 2025 เทียบ 2024`],
+  ["จากโซลาร์ฟาร์ม", fmt(co2(r => r.source === "solar_farm"), 0) + " tCO₂",
+    `${D.farm_mw["2024"]} → ${D.farm_mw["2025"]} MW · ${fmt(D.farm_yield["2024"], 0)} / ${fmt(D.farm_yield["2025"], 0)} MWh/MW/ปี`],
+  ["จากระบบที่ติดตั้งให้ลูกค้า", fmt(co2(r => r.source === "customer_solar"), 0) + " tCO₂", `กำลังผลิตสะสม ${fmt(D.customer_fleet_end_mw)} MW ณ สิ้นปี 2025`],
+]);
+document.getElementById("co2Note").textContent =
+  `tCO₂ ต่อเดือน · คิดจากไฟโซลาร์ × Grid Emission Factor ${D.grid_ef} tCO₂/MWh · ผลผลิตโซลาร์ฟาร์มอยู่ในช่วงปกติ 1,400–1,500 MWh/MW/ปี`;
+document.getElementById("co2Table").innerHTML = pivot(D.co2, "source", "tco2_avoided", SRC);
+
+// ---------- บทที่ 5 ก้าวต่อไป ----------
+document.getElementById("nextSteps").innerHTML = [
+  `<b>เน้นลูกค้า${topSeg.name}</b> เพราะสร้างรายได้ที่เพิ่มขึ้นถึง ${fmt(topSeg.share, 0)}% ด้วยโครงการเพียง ${topSeg.b.projects} โครงการในปี 2025`,
+  `<b>ขยายบริการ O&amp;M ตามฐานลูกค้า</b> ระบบลูกค้าสะสม ${fmt(D.customer_fleet_end_mw)} MW คือรายได้ประจำที่โตตามยอดติดตั้ง`,
+  `<b>ลดการพึ่งพาก๊าซ</b> ค่าเชื้อเพลิงก๊าซคิดเป็น ${fmt(gas / costTotal * 100)}% ของต้นทุน และไม่ช่วยลด CO₂`,
+  `<b>ใช้ปัญหาค่าไฟเป็นจุดขายกับบ้านพักอาศัย</b> ติดโซลาร์ 5 kW ช่วยประหยัดราว ${fmt(saveNow, 0)} บาท/เดือน`,
+  `<b>ตั้งเป้า ESG ต่อเนื่อง</b> ปี 2025 ลด CO₂ ได้ ${fmt(co225, 0)} ตัน ${signed(pct(co225, co224))} จากปีก่อน ส่วนใหญ่มาจากระบบที่ติดตั้งให้ลูกค้า`,
+].map(t => `<li>${t}</li>`).join("");
+
+// ---------- กราฟ ----------
+const charts = [];
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function render() {
+  charts.forEach(c => c.destroy()); charts.length = 0;
+  const ink2 = css("--ink-2"), muted = css("--muted"), grid = css("--grid"), axis = css("--axis"), surface = css("--surface");
+  const series = [css("--s1"), css("--s2"), css("--s3")];
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color = ink2;
+
+  const valueAxis = stacked => ({ stacked, beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { color: muted, callback: v => v.toLocaleString("th-TH") } });
+  const catAxis = stacked => ({ stacked, grid: { display: false }, border: { color: axis }, ticks: { color: muted, maxRotation: 0, autoSkipPadding: 12 } });
+  const legend = { position: "top", align: "start", labels: { boxWidth: 10, boxHeight: 10, useBorderRadius: true, borderRadius: 2, color: ink2 } };
+  const tip = (unit, d = 1) => ({ mode: "index", intersect: false, callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y ?? c.parsed.x, d)} ${unit}` } });
+  const labels = D.months.map(monthLabel);
+  const roundTop = { topLeft: 4, topRight: 4 }, roundRight = { topRight: 4, bottomRight: 4 };
+
+  charts.push(new Chart(document.getElementById("billChart"), {
+    type: "bar",
+    data: { labels: bills.map(b => b.period.replace(" ", "\n")), datasets: [
+      { label: "บิลปกติ", data: bills.map(b => b.bill_400kwh_thb), backgroundColor: series[1], borderRadius: roundTop, borderSkipped: "bottom", borderColor: surface, borderWidth: 1 },
+      { label: "หลังติดโซลาร์ 5 kW", data: bills.map(b => b.bill_with_5kw_solar_thb), backgroundColor: series[0], borderRadius: roundTop, borderSkipped: "bottom", borderColor: surface, borderWidth: 1 },
+    ] },
+    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend, tooltip: tip("บาท", 0) },
+      scales: { x: { ...catAxis(false), ticks: { color: muted, maxRotation: 0, autoSkip: false, callback: (v, i) => { const [y, p] = bills[i].period.split(" "); return [p.split("-")[0], y]; } } }, y: valueAxis(false) } },
+  }));
+
+  charts.push(new Chart(document.getElementById("custChart"), {
+    type: "bar",
+    data: { labels: segInfo.map(x => x.name), datasets: ["2024", "2025"].map((y, i) => ({
+      label: y, data: segInfo.map(x => cust(y, x.s).revenue_mthb), backgroundColor: series[i],
+      borderRadius: roundRight, borderSkipped: "left", borderColor: surface, borderWidth: 1 })) },
+    options: { indexAxis: "y", maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend, tooltip: tip("ล้านบาท") },
+      scales: { x: valueAxis(false), y: { grid: { display: false }, border: { color: axis }, ticks: { color: ink2 } } } },
+  }));
+
+  charts.push(new Chart(document.getElementById("revChart"), {
+    type: "line",
+    data: { labels, datasets: Object.keys(SEG).map((s, i) => ({
+      label: SEG[s], data: D.months.map(m => D.revenue.find(r => r.month === m && r.segment === s).revenue_mthb),
+      borderColor: series[i], backgroundColor: series[i], borderWidth: 2, pointRadius: 0, pointHoverRadius: 5,
+      pointHoverBorderColor: surface, pointHoverBorderWidth: 2, tension: 0.25 })) },
+    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend, tooltip: tip("ล้านบาท") }, scales: { x: catAxis(false), y: valueAxis(false) } },
+  }));
+
+  charts.push(new Chart(document.getElementById("costChart"), {
+    type: "bar",
+    data: { labels: costRows.map(r => `${CAT[r.cat]} (${r.m4})`),
+      datasets: [{ label: "ต้นทุนรวม", data: costRows.map(r => r.y24 + r.y25), backgroundColor: series[0],
+        borderRadius: roundRight, borderSkipped: "left", barPercentage: 0.7 }] },
+    options: { indexAxis: "y", maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${fmt(c.parsed.x)} ล้านบาท` } } },
+      scales: { x: valueAxis(false), y: { grid: { display: false }, border: { color: axis }, ticks: { color: ink2 } } } },
+  }));
+
+  charts.push(new Chart(document.getElementById("co2Chart"), {
+    type: "bar",
+    data: { labels, datasets: Object.keys(SRC).map((s, i) => ({
+      label: SRC[s], data: D.months.map(m => D.co2.find(r => r.month === m && r.source === s).tco2_avoided),
+      backgroundColor: series[i], borderColor: surface, borderWidth: { top: 2 }, borderSkipped: false,
+      borderRadius: i === 1 ? roundTop : 0 })) },
+    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend, tooltip: tip("tCO₂", 0) }, scales: { x: catAxis(true), y: valueAxis(true) } },
+  }));
+}
+render();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
+</body>
+</html>

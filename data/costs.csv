@@ -1,0 +1,121 @@
+month,category,m4,key_partner,cost_mthb
+2024-01,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.29
+2024-01,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,10.98
+2024-01,labor,Man,ทีมติดตั้งและวิศวกร,5.42
+2024-01,maintenance,Machine,ผู้รับเหมา O&M,1.68
+2024-01,admin_process,Method,ภายในบริษัท,2.21
+2024-02,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.32
+2024-02,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,10.75
+2024-02,labor,Man,ทีมติดตั้งและวิศวกร,5.31
+2024-02,maintenance,Machine,ผู้รับเหมา O&M,1.73
+2024-02,admin_process,Method,ภายในบริษัท,2.16
+2024-03,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.64
+2024-03,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,11.74
+2024-03,labor,Man,ทีมติดตั้งและวิศวกร,5.53
+2024-03,maintenance,Machine,ผู้รับเหมา O&M,1.67
+2024-03,admin_process,Method,ภายในบริษัท,2.28
+2024-04,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,7.3
+2024-04,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,13.02
+2024-04,labor,Man,ทีมติดตั้งและวิศวกร,5.66
+2024-04,maintenance,Machine,ผู้รับเหมา O&M,1.7
+2024-04,admin_process,Method,ภายในบริษัท,2.28
+2024-05,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.91
+2024-05,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,13.74
+2024-05,labor,Man,ทีมติดตั้งและวิศวกร,6.05
+2024-05,maintenance,Machine,ผู้รับเหมา O&M,1.59
+2024-05,admin_process,Method,ภายในบริษัท,2.2
+2024-06,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,7.32
+2024-06,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,14.38
+2024-06,labor,Man,ทีมติดตั้งและวิศวกร,6.25
+2024-06,maintenance,Machine,ผู้รับเหมา O&M,1.57
+2024-06,admin_process,Method,ภายในบริษัท,2.18
+2024-07,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.52
+2024-07,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,14.51
+2024-07,labor,Man,ทีมติดตั้งและวิศวกร,5.98
+2024-07,maintenance,Machine,ผู้รับเหมา O&M,1.58
+2024-07,admin_process,Method,ภายในบริษัท,2.26
+2024-08,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.17
+2024-08,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,15.27
+2024-08,labor,Man,ทีมติดตั้งและวิศวกร,6.45
+2024-08,maintenance,Machine,ผู้รับเหมา O&M,1.76
+2024-08,admin_process,Method,ภายในบริษัท,2.24
+2024-09,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.94
+2024-09,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,17.1
+2024-09,labor,Man,ทีมติดตั้งและวิศวกร,6.74
+2024-09,maintenance,Machine,ผู้รับเหมา O&M,1.84
+2024-09,admin_process,Method,ภายในบริษัท,2.16
+2024-10,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.06
+2024-10,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,18.25
+2024-10,labor,Man,ทีมติดตั้งและวิศวกร,6.96
+2024-10,maintenance,Machine,ผู้รับเหมา O&M,1.68
+2024-10,admin_process,Method,ภายในบริษัท,2.24
+2024-11,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.24
+2024-11,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,16.9
+2024-11,labor,Man,ทีมติดตั้งและวิศวกร,6.96
+2024-11,maintenance,Machine,ผู้รับเหมา O&M,1.76
+2024-11,admin_process,Method,ภายในบริษัท,2.22
+2024-12,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.42
+2024-12,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,18.34
+2024-12,labor,Man,ทีมติดตั้งและวิศวกร,6.98
+2024-12,maintenance,Machine,ผู้รับเหมา O&M,1.7
+2024-12,admin_process,Method,ภายในบริษัท,2.25
+2025-01,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.93
+2025-01,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,21.02
+2025-01,labor,Man,ทีมติดตั้งและวิศวกร,7.94
+2025-01,maintenance,Machine,ผู้รับเหมา O&M,1.94
+2025-01,admin_process,Method,ภายในบริษัท,2.17
+2025-02,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.28
+2025-02,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,20.74
+2025-02,labor,Man,ทีมติดตั้งและวิศวกร,7.41
+2025-02,maintenance,Machine,ผู้รับเหมา O&M,1.7
+2025-02,admin_process,Method,ภายในบริษัท,2.28
+2025-03,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.02
+2025-03,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,23.14
+2025-03,labor,Man,ทีมติดตั้งและวิศวกร,8.2
+2025-03,maintenance,Machine,ผู้รับเหมา O&M,1.84
+2025-03,admin_process,Method,ภายในบริษัท,2.24
+2025-04,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,7.2
+2025-04,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,22.6
+2025-04,labor,Man,ทีมติดตั้งและวิศวกร,7.85
+2025-04,maintenance,Machine,ผู้รับเหมา O&M,1.95
+2025-04,admin_process,Method,ภายในบริษัท,2.28
+2025-05,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.57
+2025-05,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,23.75
+2025-05,labor,Man,ทีมติดตั้งและวิศวกร,8.61
+2025-05,maintenance,Machine,ผู้รับเหมา O&M,1.74
+2025-05,admin_process,Method,ภายในบริษัท,2.3
+2025-06,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,6.53
+2025-06,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,24.67
+2025-06,labor,Man,ทีมติดตั้งและวิศวกร,8.43
+2025-06,maintenance,Machine,ผู้รับเหมา O&M,2.03
+2025-06,admin_process,Method,ภายในบริษัท,2.24
+2025-07,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.59
+2025-07,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,30.37
+2025-07,labor,Man,ทีมติดตั้งและวิศวกร,9.91
+2025-07,maintenance,Machine,ผู้รับเหมา O&M,1.89
+2025-07,admin_process,Method,ภายในบริษัท,2.23
+2025-08,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.74
+2025-08,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,27.48
+2025-08,labor,Man,ทีมติดตั้งและวิศวกร,9.04
+2025-08,maintenance,Machine,ผู้รับเหมา O&M,1.78
+2025-08,admin_process,Method,ภายในบริษัท,2.23
+2025-09,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.64
+2025-09,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,31.65
+2025-09,labor,Man,ทีมติดตั้งและวิศวกร,9.85
+2025-09,maintenance,Machine,ผู้รับเหมา O&M,1.81
+2025-09,admin_process,Method,ภายในบริษัท,2.28
+2025-10,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.29
+2025-10,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,32.6
+2025-10,labor,Man,ทีมติดตั้งและวิศวกร,10.56
+2025-10,maintenance,Machine,ผู้รับเหมา O&M,2.05
+2025-10,admin_process,Method,ภายในบริษัท,2.1
+2025-11,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.49
+2025-11,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,36.71
+2025-11,labor,Man,ทีมติดตั้งและวิศวกร,11.32
+2025-11,maintenance,Machine,ผู้รับเหมา O&M,1.98
+2025-11,admin_process,Method,ภายในบริษัท,2.22
+2025-12,gas_fuel,Material,ผู้จัดหาก๊าซธรรมชาติ,5.39
+2025-12,solar_equipment,Material,ผู้ผลิตแผง/อินเวอร์เตอร์,37.94
+2025-12,labor,Man,ทีมติดตั้งและวิศวกร,11.29
+2025-12,maintenance,Machine,ผู้รับเหมา O&M,1.97
+2025-12,admin_process,Method,ภายในบริษัท,2.12
