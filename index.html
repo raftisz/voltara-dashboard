@@ -112,6 +112,12 @@
       <div class="chart" style="height:300px"><canvas id="custChart" role="img" aria-label="กราฟแท่งแนวนอนรายได้ติดตั้งของลูกค้า 5 กลุ่ม ปี 2024 และ 2025"></canvas></div>
       <div class="tablewrap" id="custTable"></div>
     </section>
+    <section class="card" style="margin-top:12px">
+      <h3>หน่วยงานราชการหรือโรงเรียน: งานกระจุกตามรอบงบประมาณ</h3>
+      <p class="note">รายได้ติดตั้งรายเดือน ล้านบาท · ปีงบประมาณเริ่ม ต.ค. งานจึงเร่งช่วงปลายปีงบ</p>
+      <div class="chart" style="height:220px"><canvas id="govChart" role="img" aria-label="กราฟแท่งรายได้ติดตั้งกลุ่มราชการและโรงเรียนรายเดือน ช่วงกรกฎาคมถึงกันยายนสูงกว่าเดือนอื่น"></canvas></div>
+      <p class="story" id="govStory"></p>
+    </section>
   </section>
 
   <!-- บทที่ 3 -->
@@ -202,9 +208,20 @@ const segInfo = segs.map(s => {
 });
 const topSeg = segInfo.reduce((a, b) => b.share > a.share ? b : a);
 const projects = y => sum(D.customers, "projects", c => c.year === y);
+const mostProjects = segInfo.reduce((a, b) => b.b.projects > a.b.projects ? b : a);
+const mostRevenue = segInfo.reduce((a, b) => b.b.revenue_mthb > a.b.revenue_mthb ? b : a);
 document.getElementById("ch2Lead").innerHTML =
   `ปี 2025 ติดตั้ง ${fmt(projects("2025"), 0)} โครงการ (ปี 2024 ${fmt(projects("2024"), 0)} โครงการ) ` +
-  `บ้านพักอาศัยมีจำนวนโครงการมากที่สุด แต่${topSeg.name}สร้างรายได้มากที่สุด เพราะระบบใหญ่กว่ามาก`;
+  `${mostProjects.name}มีจำนวนโครงการมากที่สุด (${fmt(mostProjects.b.projects, 0)} โครงการ) ` +
+  `แต่${mostRevenue.name}สร้างรายได้มากที่สุด (${fmt(mostRevenue.b.revenue_mthb)} ล้านบาท) เพราะระบบเฉลี่ยใหญ่กว่า ${mostRevenue.a.avg_system_kw} kW ต่อโครงการ`;
+
+// ราชการ/โรงเรียน: สัดส่วนรายได้ในช่วงรอบงบประมาณ
+const isBudget = m => D.budget_months.includes(+m.slice(5));
+const govRows = D.customers_monthly.filter(r => r.segment === "government");
+const govPeak = sum(govRows, "revenue_mthb", r => isBudget(r.month)) / sum(govRows, "revenue_mthb") * 100;
+document.getElementById("govStory").innerHTML =
+  `<b>${fmt(govPeak, 0)}%</b> ของรายได้กลุ่มนี้อยู่ในช่วง ก.ค.–ก.ย. ซึ่งเป็นแค่ 3 เดือนจาก 12 เดือน ` +
+  `เพราะหน่วยงานรัฐเร่งเบิกจ่ายก่อนปิดปีงบประมาณ ทีมติดตั้งต้องวางแผนกำลังคนรองรับช่วงนี้`;
 document.getElementById("custTable").innerHTML = table(
   ["กลุ่ม", "โครงการ 24 → 25", "kW 24 → 25", "ขนาดเฉลี่ย", "รายได้ 24 → 25 (ล้านบาท)", "โต"],
   segInfo.map(x => [x.name, `${fmt(x.a.projects, 0)} → ${fmt(x.b.projects, 0)}`, `${fmt(x.a.kw_installed, 0)} → ${fmt(x.b.kw_installed, 0)}`,
@@ -260,8 +277,9 @@ document.getElementById("nextSteps").innerHTML = [
   `<b>เน้นลูกค้า${topSeg.name}</b> เพราะสร้างรายได้ที่เพิ่มขึ้นถึง ${fmt(topSeg.share, 0)}% ด้วยโครงการเพียง ${topSeg.b.projects} โครงการในปี 2025`,
   `<b>ขยายบริการ O&amp;M ตามฐานลูกค้า</b> ระบบลูกค้าสะสม ${fmt(D.customer_fleet_end_mw)} MW คือรายได้ประจำที่โตตามยอดติดตั้ง`,
   `<b>ลดการพึ่งพาก๊าซ</b> ค่าเชื้อเพลิงก๊าซคิดเป็น ${fmt(gas / costTotal * 100)}% ของต้นทุน และไม่ช่วยลด CO₂`,
-  `<b>ใช้ปัญหาค่าไฟเป็นจุดขายกับบ้านพักอาศัย</b> ติดโซลาร์ 5 kW ช่วยประหยัดราว ${fmt(saveNow, 0)} บาท/เดือน`,
-  `<b>ตั้งเป้า ESG ต่อเนื่อง</b> ปี 2025 ลด CO₂ ได้ ${fmt(co225, 0)} ตัน ${signed(pct(co225, co224))} จากปีก่อน ส่วนใหญ่มาจากระบบที่ติดตั้งให้ลูกค้า`,
+  `<b>เตรียมทีมรองรับงานราชการ/โรงเรียนช่วง ก.ค.–ก.ย.</b> รายได้กลุ่มนี้ ${fmt(govPeak, 0)}% กระจุกในช่วงปลายปีงบประมาณ`,
+  `<b>ใช้ปัญหาค่าไฟเป็นจุดขายกับเจ้าของบ้าน</b> ติดโซลาร์ 5 kW ช่วยประหยัดราว ${fmt(saveNow, 0)} บาท/เดือน`,
+  `<b>ตั้งเป้า ESG ต่อเนื่อง</b> ปี 2025 ลด CO₂ ได้ ${fmt(co225, 0)} ตัน ${signed(pct(co225, co224))} จากปีก่อน ส่วนที่เพิ่มขึ้นส่วนใหญ่มาจากระบบที่ติดตั้งให้ลูกค้า`,
 ].map(t => `<li>${t}</li>`).join("");
 
 // ---------- กราฟ ----------
@@ -301,6 +319,17 @@ function render() {
     options: { indexAxis: "y", maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
       plugins: { legend, tooltip: tip("ล้านบาท") },
       scales: { x: valueAxis(false), y: { grid: { display: false }, border: { color: axis }, ticks: { color: ink2 } } } },
+  }));
+
+  charts.push(new Chart(document.getElementById("govChart"), {
+    type: "bar",
+    data: { labels, datasets: [
+      { label: "ช่วงรอบงบประมาณ (ก.ค.–ก.ย.)", data: govRows.map(r => isBudget(r.month) ? r.revenue_mthb : null), backgroundColor: series[1], borderRadius: roundTop, borderSkipped: "bottom", grouped: false },
+      { label: "เดือนอื่น", data: govRows.map(r => isBudget(r.month) ? null : r.revenue_mthb), backgroundColor: series[0], borderRadius: roundTop, borderSkipped: "bottom", grouped: false },
+    ] },
+    options: { maintainAspectRatio: false,
+      plugins: { legend, tooltip: { callbacks: { label: c => ` ${fmt(c.parsed.y)} ล้านบาท` } } },
+      scales: { x: catAxis(false), y: valueAxis(false) } },
   }));
 
   charts.push(new Chart(document.getElementById("revChart"), {

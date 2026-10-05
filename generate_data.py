@@ -59,29 +59,44 @@ for i, month in enumerate(MONTHS):
     for seg, v in (("installation", install), ("ppa", ppa), ("om_service", om)):
         revenue.append({"month": month, "segment": seg, "revenue_mthb": round(v, 2)})
 
-# ---------- customers.csv: ลูกค้าติดตั้ง 5 กลุ่ม (รายปี) ----------
+# ---------- customers.csv: ลูกค้าติดตั้ง 5 กลุ่ม (ตาม Business Model Canvas) ----------
 # segment, ชื่อไทย, ราคาติดตั้ง บาท/W, ขนาดระบบเฉลี่ย kW, สัดส่วนรายได้ติดตั้ง ม.ค.24 → ธ.ค.25
+# (government ใช้สัดส่วนเฉลี่ยทั้งปี แล้วกระจุกตามรอบงบประมาณด้านล่าง)
 SEGMENTS = [
-    ("household", "บ้านพักอาศัย", 38, 5, 0.30, 0.18),
-    ("sme", "ร้านค้า/SME", 33, 30, 0.18, 0.17),
-    ("factory", "โรงงานอุตสาหกรรม", 26, 500, 0.27, 0.42),
-    ("commercial", "อาคารพาณิชย์/โรงแรม", 29, 150, 0.17, 0.15),
-    ("agri", "เกษตร/ฟาร์ม", 31, 50, 0.08, 0.08),
+    ("homeowner", "เจ้าของบ้าน", 38, 5, 0.30, 0.22),
+    ("sme", "ร้านค้าและ SMEs", 33, 20, 0.22, 0.22),
+    ("small_factory", "โรงงานขนาดเล็ก", 28, 120, 0.22, 0.30),   # ระบบเล็ก-กลาง 50–200 kW
+    ("office", "อาคารสำนักงาน", 30, 80, 0.16, 0.16),
+    ("government", "หน่วยงานราชการหรือโรงเรียน", 32, 40, 0.10, 0.10),
 ]
+# ปีงบประมาณราชการ ต.ค.–ก.ย. งานติดตั้งกระจุกช่วงเร่งเบิกจ่ายปลายปีงบ (ก.ค.–ก.ย.)
+# น้ำหนักเฉลี่ยทั้งปี = 1: ก.ค.–ก.ย. ×2 เดือนอื่น ×2/3
+BUDGET_MONTHS = (7, 8, 9)
+def gov_weight(month):
+    return 2.0 if int(month[5:]) in BUDGET_MONTHS else 2 / 3
+
 monthly_kw = []          # kW ที่ติดตั้งเสร็จแต่ละเดือน (ทุกกลุ่มรวมกัน)
 seg_year = {}            # (year, segment) -> {"rev": ล้านบาท, "kw": kW}
+customers_monthly = []
 for i, month in enumerate(MONTHS):
     t = i / (len(MONTHS) - 1)
     install = next(r["revenue_mthb"] for r in revenue
                    if r["month"] == month and r["segment"] == "installation")
+    shares = {seg: s0 + (s1 - s0) * t for seg, _, _, _, s0, s1 in SEGMENTS}
+    shares["government"] *= gov_weight(month)
+    others = sum(v for k, v in shares.items() if k != "government")
+    scale = (1 - shares["government"]) / others                 # รวมทุกกลุ่ม = 100% ของรายได้ติดตั้ง
     kw_month = 0.0
-    for seg, _, price, _, s0, s1 in SEGMENTS:
-        rev = install * (s0 + (s1 - s0) * t)
+    for seg, _, price, _, _, _ in SEGMENTS:
+        share = shares[seg] if seg == "government" else shares[seg] * scale
+        rev = install * share
         kw = rev * 1e6 / price / 1000                           # ล้านบาท → kW
         kw_month += kw
         acc = seg_year.setdefault((month[:4], seg), {"rev": 0.0, "kw": 0.0})
         acc["rev"] += rev
         acc["kw"] += kw
+        customers_monthly.append({"month": month, "segment": seg,
+                                  "revenue_mthb": round(rev, 2), "kw_installed": round(kw, 1)})
     monthly_kw.append(kw_month)
 
 customers = []
@@ -180,12 +195,14 @@ write_csv("co2_reduction.csv", co2)
 write_csv("revenue.csv", revenue)
 write_csv("costs.csv", costs)
 write_csv("customers.csv", customers)
+write_csv("customers_monthly.csv", customers_monthly)
 write_csv("household_bill.csv", household_bill)
 
 # data.js ให้ index.html เปิดได้ตรง ๆ แบบ file:// (fetch CSV ใช้ไม่ได้ใน file://)
 payload = {"months": MONTHS, "generation": generation, "co2": co2,
            "revenue": revenue, "costs": costs, "grid_ef": GRID_EF,
-           "customers": customers, "household_bill": household_bill,
+           "customers": customers, "customers_monthly": customers_monthly,
+           "budget_months": list(BUDGET_MONTHS), "household_bill": household_bill,
            "farm_mw": FARM_MW, "farm_yield": {y: round(v) for y, v in FARM_YIELD.items()},
            "customer_fleet_end_mw": round(CUSTOMER_FLEET_END_KW / 1000, 1)}
 (DATA / "data.js").write_text(
@@ -237,6 +254,21 @@ seg_rows = "\n".join(
     f"| {f(cust[('2024', seg)]['revenue_mthb'])} → {f(cust[('2025', seg)]['revenue_mthb'])} "
     f"| {(cust[('2025', seg)]['revenue_mthb'] - cust[('2024', seg)]['revenue_mthb']) / inst_increase * 100:.0f}% |"
     for seg, name, *_ in SEGMENTS)
+def _top():
+    best = None
+    for seg, name, price, size, *_ in SEGMENTS:
+        a, b = cust[("2024", seg)], cust[("2025", seg)]
+        share = (b["revenue_mthb"] - a["revenue_mthb"]) / inst_increase * 100
+        if best is None or share > best["share"]:
+            best = {"name": name, "a": a["revenue_mthb"], "b": b["revenue_mthb"], "share": share,
+                    "size": size, "value": size * price / 1000, "pa": a["projects"], "pb": b["projects"]}
+    return best
+
+
+TOP = _top()
+gov_rows = [r for r in customers_monthly if r["segment"] == "government"]
+GOV_PEAK = sum(r["revenue_mthb"] for r in gov_rows if int(r["month"][5:]) in BUDGET_MONTHS) / sum(
+    r["revenue_mthb"] for r in gov_rows) * 100
 bill_rows = "\n".join(
     f"| {b['period']} | {b['tariff_thb_per_kwh']:.2f} | {b['bill_400kwh_thb']:,} | {b['bill_with_5kw_solar_thb']:,} |"
     for b in household_bill)
@@ -308,10 +340,10 @@ md = f"""# Data Dictionary — Voltara Dashboard
 **ใช้ในบทที่ 5:** รายได้ติดตั้งมากกว่า PPA และโตเร็วกว่า ({pct(S['inst_growth'])} เทียบกับ {pct(S['ppa_growth'])})
 หมายความว่าธุรกิจบริการโตเร็วกว่าการขายไฟ
 
-**เหตุผลที่รายได้ติดตั้งโต {pct(S['inst_growth'])}:** กลุ่มโรงงานอุตสาหกรรมเป็นแรงขับหลัก
-รายได้เพิ่มจาก {f(cust[('2024', 'factory')]['revenue_mthb'])} เป็น {f(cust[('2025', 'factory')]['revenue_mthb'])} ล้านบาท
-คิดเป็น {(cust[('2025', 'factory')]['revenue_mthb'] - cust[('2024', 'factory')]['revenue_mthb']) / inst_increase * 100:.0f}% ของรายได้ติดตั้งที่เพิ่มขึ้นทั้งหมด
-เพราะโรงงานติดตั้งระบบใหญ่ (เฉลี่ย 500 kW) โครงการเดียวมีมูลค่าราว 13 ล้านบาท (รายละเอียดในหัวข้อ 5)
+**เหตุผลที่รายได้ติดตั้งโต {pct(S['inst_growth'])}:** กลุ่ม{TOP['name']}เป็นแรงขับหลัก
+รายได้เพิ่มจาก {f(TOP['a'])} เป็น {f(TOP['b'])} ล้านบาท
+คิดเป็น {TOP['share']:.0f}% ของรายได้ติดตั้งที่เพิ่มขึ้นทั้งหมด
+ระบบเฉลี่ย {TOP['size']} kW โครงการละราว {f(TOP['value'])} ล้านบาท และจำนวนโครงการเพิ่มจาก {TOP['pa']} เป็น {TOP['pb']} (รายละเอียดในหัวข้อ 5)
 
 ## 4. `data/costs.csv` — ต้นทุนจัดหมวดตาม 4M
 
@@ -334,7 +366,7 @@ md = f"""# Data Dictionary — Voltara Dashboard
 | คอลัมน์ | ชนิด | หน่วย | ความหมาย |
 |---|---|---|---|
 | year | text | YYYY | ปี |
-| segment | text | — | `household` บ้านพักอาศัย · `sme` ร้านค้า/SME · `factory` โรงงานอุตสาหกรรม · `commercial` อาคารพาณิชย์/โรงแรม · `agri` เกษตร/ฟาร์ม |
+| segment | text | — | `homeowner` เจ้าของบ้าน · `sme` ร้านค้าและ SMEs · `small_factory` โรงงานขนาดเล็ก (ระบบ 50–200 kW) · `office` อาคารสำนักงาน · `government` หน่วยงานราชการหรือโรงเรียน |
 | segment_th | text | — | ชื่อกลุ่มภาษาไทย |
 | projects | number | โครงการ | จำนวนโครงการที่ติดตั้ง (kw_installed ÷ avg_system_kw) |
 | kw_installed | number | kW | กำลังผลิตที่ติดตั้งในปีนั้น |
@@ -345,6 +377,10 @@ md = f"""# Data Dictionary — Voltara Dashboard
 | กลุ่ม | โครงการ 2024 → 2025 | kW 2024 → 2025 | รายได้ (ล้านบาท) | สัดส่วนของรายได้ที่เพิ่มขึ้น |
 |---|---|---|---|---|
 {seg_rows}
+
+**ราชการ/โรงเรียนกระจุกตามรอบงบประมาณ:** ปีงบประมาณเริ่ม ต.ค. งานติดตั้งจึงกระจุกช่วงเร่งเบิกจ่ายปลายปีงบ (ก.ค.–ก.ย.)
+รายได้กลุ่มนี้ {GOV_PEAK:.0f}% อยู่ใน 3 เดือนดังกล่าว ดูรายเดือนได้ใน `data/customers_monthly.csv`
+(คอลัมน์ month, segment, revenue_mthb, kw_installed)
 
 ## 6. `data/household_bill.csv` — ค่าไฟครัวเรือน (บทที่ 1 ปัญหา)
 
